@@ -10,6 +10,12 @@ signal save_complete
 signal load_complete
 
 
+## Cached deserialized save data to avoid re-parsing the file for every entity lookup.
+var _cached_save_data: Dictionary = {}
+## Filepath that corresponds to [member _cached_save_data]. Empty string means the cache is cold.
+var _cached_save_path: String = ""
+
+
 ## Save the game and write it to user://saves directory.
 func save():
 	var save_data = {
@@ -45,6 +51,9 @@ func save():
 	# I think these two are redundant but I wanna be safe
 	file.flush()
 	file.close()
+	# Invalidate the load cache so it is rebuilt from the new save on the next lookup.
+	_cached_save_path = ""
+	_cached_save_data = {}
 	save_complete.emit()
 
 
@@ -86,17 +95,19 @@ func load_game(path:String):
 
 
 ## Check if an entity is accounted for in the save system. Returns the save data blob if there is, else none.
-## Use sparingly; could get memory intensive.
 func entity_in_save(ref_id:String) -> Option:
 	var most_recent = _get_most_recent_savegame() # get most recent filepath
 	# if there was no recent save, it isn't here
 	if not most_recent.some():
 		return Option.none()
-	# deserialize
-	var deserialized_data:Dictionary = _deserialize(FileAccess.open(most_recent.unwrap(), FileAccess.READ).get_as_text())
-	if deserialized_data["entity_data"].has(ref_id):
+	var save_path: String = most_recent.unwrap()
+	# Populate cache on first call for this save file, then reuse for every subsequent lookup.
+	if _cached_save_path != save_path:
+		_cached_save_data = _deserialize(FileAccess.open(save_path, FileAccess.READ).get_as_text())
+		_cached_save_path = save_path
+	if _cached_save_data["entity_data"].has(ref_id):
 		# if the data has it, return the blob
-		return Option.from(deserialized_data["entity_data"][ref_id])
+		return Option.from(_cached_save_data["entity_data"][ref_id])
 	else:
 		# else, it's not here.
 		return Option.none()

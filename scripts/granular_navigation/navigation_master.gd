@@ -165,29 +165,13 @@ func construct_tree(points:Array[NavPoint]):
 				return arr
 			).call()
 			# Find median point
-			var middle_coords:Vector3 = selected.reduce(func(accum:Array, pt:NavPoint): # first we sum up the point coordinates
-				accum[0] += pt.position.x
-				accum[1] += pt.position.y
-				accum[2] += pt.position.z
-			).reduce(func(accum:Vector3, num:float): # then we divide each component
-				accum[0] = num / 5
-				accum[1] = num / 5
-				accum[2] = num / 5
-			)
+			var middle_coords:Vector3 = selected.reduce(func(acc:Vector3, pt:NavPoint): return acc + pt.position, Vector3.ZERO) / selected.size()
 			# then we sort by distance to center point. using quared to avoid a sqrt. Sort descending.
 			selected.sort_custom(func(a:NavPoint, b:NavPoint): return middle_coords.distance_squared_to(a.position) > middle_coords.distance_squared_to(b.position))
 			median = selected.pop_back()
 		else: # else, accumulate all of them
 			var arr_size = sorted_points[w].size()
-			var middle_coords:Vector3 = sorted_points[w].reduce(func(accum:Array, pt:NavPoint): # first we sum up the point coordinates
-				accum[0] += pt.position.x
-				accum[1] += pt.position.y
-				accum[2] += pt.position.z
-			).reduce(func(accum:Vector3, num:float): # then we divide each component
-				accum[0] = num / arr_size
-				accum[1] = num / arr_size
-				accum[2] = num / arr_size
-			)
+			var middle_coords:Vector3 = sorted_points[w].reduce(func(acc:Vector3, pt:NavPoint): return acc + pt.position, Vector3.ZERO) / arr_size
 			# then we sort by distance to center point. using quared to avoid a sqrt. Sort descending.
 			sorted_points[w].sort_custom(func(a:NavPoint, b:NavPoint): return middle_coords.distance_squared_to(a.position) > middle_coords.distance_squared_to(b.position))
 			median = sorted_points[w].pop_back()
@@ -200,15 +184,7 @@ func construct_tree(points:Array[NavPoint]):
 		var median:NavPoint
 		while not sorted_points[w].size() == 0: # while loop here, because 1) gdscript doesnt like you editing an array while looping through it, and we want to empty the array anyway
 			var arr_size = sorted_points[w].size()
-			var middle_coords:Vector3 = sorted_points[w].reduce(func(accum:Array, pt:NavPoint): # first we sum up the point coordinates
-				accum[0] += pt.position.x
-				accum[1] += pt.position.y
-				accum[2] += pt.position.z
-			).reduce(func(accum:Vector3, num:float): # then we divide each component
-				accum[0] = num / arr_size
-				accum[1] = num / arr_size
-				accum[2] = num / arr_size
-			)
+			var middle_coords:Vector3 = sorted_points[w].reduce(func(acc:Vector3, pt:NavPoint): return acc + pt.position, Vector3.ZERO) / arr_size
 			# then we sort by distance to center point. using quared to avoid a sqrt. Sort descending.
 			sorted_points[w].sort_custom(func(a:NavPoint, b:NavPoint): return middle_coords.distance_squared_to(a.position) > middle_coords.distance_squared_to(b.position))
 			median = sorted_points[w].pop_back()
