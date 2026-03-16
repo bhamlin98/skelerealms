@@ -37,6 +37,10 @@ Skelerealms is inpsired by Creation Engine, but aims to tackle many of its short
 
 ### Concepts
 
+- [Entities](concepts/entities.md)
+- [Worlds](concepts/worlds.md)
+- [Technical Analysis: Skelerealms vs. Bethesda's Creation Engine](concepts/technical_analysis.md)
+
 ### User guide
 
 

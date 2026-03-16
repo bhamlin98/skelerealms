@@ -119,22 +119,24 @@ func save() -> Dictionary: # TODO: Determine if instance is saved to disk. If no
 			"world" = world,
 			"position" = position,
 			"unique" = unique
-		}
+		},
+		"components": {}
 	}
-	for c in get_children().filter(func(x:SKEntityComponent): return x.dirty): # filter to get dirty acomponents
+	for c in get_children().filter(func(x:SKEntityComponent): return x.dirty): # filter to get dirty components
 		data["components"][c.name] = ((c as SKEntityComponent).save())
 	return data
 
 
 func load_data(data:Dictionary) -> void:
 	world = data["entity_data"]["world"]
-	position = JSON.parse_string(data["entity_data"]["position"])
-	unique = JSON.parse_string(data["entity_data"]["unique"])
+	# Vector3 is serialized by JSON as its string form e.g. "(1, 2, 3)"; use str_to_var to recover it.
+	position = str_to_var(data["entity_data"]["position"])
+	unique = data["entity_data"]["unique"]
 
 	# loop through all saved components and call load
-	for d in data["components"]:
-		(get_node(d) as SKEntityComponent).load_data(data[d])
-	pass
+	if data.has("components"):
+		for d in data["components"]:
+			(get_node(d) as SKEntityComponent).load_data(data["components"][d])
 
 
 func reset_data() -> void:
